@@ -1,0 +1,2 @@
+class XuipyException(Exception):
+    pass
