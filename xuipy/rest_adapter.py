@@ -59,20 +59,26 @@ class RestAdapter:
 
         # Deserialize JSON output to Python object, or return failed Result on exception
         try:
-            data_out = response.json()
+            data_out = None
+            if response.status_code == 200 and response.text and response.text != "":
+                data_out = response.json()
+            # If status_code in 200-299 range, return success Result with data, otherwise raise exception
+            is_success = 299 >= response.status_code >= 200  # 200 to 299 is OK
+            log_line = log_line_post.format(is_success, response.status_code, response.reason)
+            if is_success and data_out:
+                self._logger.debug(msg=log_line)
+                return Result(status_code=response.status_code, headers=response.headers,
+                              success=data_out['success'], message=data_out['msg'], data=data_out['obj'])
+            if not is_success:
+                self._logger.error(msg=log_line)
+                raise XuipyException(f"{response.status_code}: {response.reason}")
+            return Result(status_code=response.status_code, headers=response.headers,
+                          success=True,message=response.reason, data=None)
         except (ValueError, TypeError, JSONDecodeError) as e:
             self._logger.error(msg=log_line_post.format(False, None, e))
             raise XuipyException("Bad JSON in response") from e
 
-        # If status_code in 200-299 range, return success Result with data, otherwise raise exception
-        is_success = 299 >= response.status_code >= 200     # 200 to 299 is OK
-        log_line = log_line_post.format(is_success, response.status_code, response.reason)
-        if is_success:
-            self._logger.debug(msg=log_line)
-            return Result(status_code=response.status_code, headers=response.headers,
-                          success=data_out['success'], message=data_out['msg'],data=data_out['obj'])
-        self._logger.error(msg=log_line)
-        raise XuipyException(f"{response.status_code}: {response.reason}")
+
 
     def get(self, endpoint: str, ep_params: Dict = None, prefix: str = None) -> Result:
         return self._do(http_method='GET', endpoint=endpoint, ep_params=ep_params, prefix=prefix)
