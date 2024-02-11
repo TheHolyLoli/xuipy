@@ -27,7 +27,7 @@ class Xuipy:
             inbounds.append(utils.handle_raw_inbound(inbound_raw))
         return inbounds
 
-    def get_inbound(self,inbound_id: int) -> Inbound:
+    def get_inbound(self, inbound_id: int) -> Inbound:
         result = self._rest_adapter.get(f"/get/{inbound_id}")
         if not result.data:
             raise XuipyException(result.message)
@@ -36,3 +36,46 @@ class Xuipy:
     def create_backup(self):
         result = self._rest_adapter.get("/createbackup")
         return True
+
+    def add_inbound(self, inbound: Inbound) -> Inbound:
+        pass
+
+    def delete_inbound(self, inbound_id: int) -> Result:
+        return self._rest_adapter.post(f"/del/{inbound_id}")
+
+
+    def update_inbound(self, inbound_id: int) -> Inbound:
+        pass
+
+    def add_client(self, inbound_id: int, email: str, uuid: Optional[UUID] = None, enable: bool = True,
+                   flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
+                   expire_time: Optional[int] = None,  # TODO : support Datetime directly
+                   telegram_id: Optional[Union[str, int]] = None, subscription_id: Optional[Union[str, int]] = None
+                   ) -> Client:
+        pass
+
+    def delete_client(self, inbound_id: int, client_uuid: UUID) -> Result:
+        return self._rest_adapter.post(f"/:{inbound_id}/delClient/{client_uuid}")
+
+    def update_client(self, client_id: Union[int, str]) -> Client:
+        pass
+
+    def get_client_traffic(self, client_email: Union[int, str]) -> ClientStat:
+        result = self._rest_adapter.get(f"/getClientTraffics/{client_email}")
+        if result.success and result.data:
+            return ClientStat(**utils.json_to_snake_case(result.data))
+
+    def reset_client_traffic(self, inbound_id: int, client_email: Union[int, str]) -> Result:
+        return self._rest_adapter.post(f"/{inbound_id}/resetClientTraffic/{client_email}")
+
+    def reset_all_inbounds_traffic(self) -> Result:
+        return self._rest_adapter.post("/resetAllTraffics")
+
+    def reset_inbound_clients_traffic(self, inbound_id: Union[int]) -> Result:
+        return self._rest_adapter.post(f"/resetAllClientTraffics/{inbound_id}")
+
+    def delete_depleted_clients(self, inbound_id: int) -> Result:
+        return self._rest_adapter.post(f"/delDepletedClients/{inbound_id}")
+
+    def get_get_onlines(self) -> List[str]:
+        return self._rest_adapter.post("/onlines")
