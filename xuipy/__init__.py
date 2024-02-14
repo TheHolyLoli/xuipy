@@ -47,18 +47,70 @@ class Xuipy:
     def update_inbound(self, inbound_id: int) -> Inbound:
         pass
 
-    def add_client(self, inbound_id: int, email: str, uuid: Optional[UUID] = None, enable: bool = True,
+    def add_client(self, inbound_id: int, email: str, uuid: Optional[Union[UUID,str]] = None, password: Optional[str] = None, enable: bool = True,
                    flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
                    expire_time: Optional[int] = None,  # TODO : support Datetime directly
                    telegram_id: Optional[Union[str, int]] = None, subscription_id: Optional[Union[str, int]] = None
-                   ) -> Client:
-        pass
+                   ) -> Result:
+
+        settings = {
+            "clients": [
+                {
+                    "id": uuid,
+                    "email": email,
+                    "enable": enable,
+                    "flow": flow,
+                    "limitIp": limit_ip,
+                    "totalGB": total_traffic,
+                    "tgId": telegram_id,
+                    "subId": subscription_id
+                }
+            ],
+            "decryption": "none",
+            "fallbacks": []
+        }
+        if expire_time:
+            settings["clients"][0]["expiryTime"] = expire_time
+
+        data = {
+            "id": inbound_id,
+            "settings": json.dumps(settings)
+        }
+        return self._rest_adapter.post(f"/addClient", data=data)
 
     def delete_client(self, inbound_id: int, client_uuid: UUID) -> Result:
         return self._rest_adapter.post(f"/:{inbound_id}/delClient/{client_uuid}")
 
-    def update_client(self, client_id: Union[int, str]) -> Client:
-        pass
+    def update_client(self, inbound_id: int, email: str, uuid: Optional[Union[UUID,str]] = None, password: Optional[str] = None,
+                       enable: bool = True,
+                       flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
+                       expire_time: Optional[int] = None,  # TODO : support Datetime directly
+                       telegram_id: Optional[Union[str, int]] = None, subscription_id: Optional[Union[str, int]] = None
+                       ) -> Client:
+            settings = {
+                "clients": [
+                    {
+                        "id": uuid,
+                        "email": email,
+                        "enable": enable,
+                        "flow": flow,
+                        "limitIp": limit_ip,
+                        "totalGB": total_traffic,
+                        "tgId": telegram_id,
+                        "subId": subscription_id
+                    }
+                ],
+                "decryption": "none",
+                "fallbacks": []
+            }
+            if expire_time:
+                settings["clients"][0]["expiryTime"] = expire_time
+
+            data = {
+                "id": inbound_id,
+                "settings": json.dumps(settings)
+            }
+            return self._rest_adapter.post(f"/updateClient/{uuid}", data=data)
 
     def get_client_traffic(self, client_email: Union[int, str]) -> ClientStat:
         result = self._rest_adapter.get(f"/getClientTraffics/{client_email}")
