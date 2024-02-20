@@ -12,13 +12,17 @@ from xuipy.models import *
 class Xuipy:
     def __init__(self, hostname: str,
                  port: int = 443, https: bool = False, path: str = "",
-                 ssl_verify: bool = True, logger: logging.Logger = None):
-        self._rest_adapter = RestAdapter(hostname, port, https, path, ssl_verify, logger)
+                 ssl_verify: bool = True,session_string: str = None,
+                 logger: logging.Logger = None):
+        self._rest_adapter = RestAdapter(hostname, port, https, path, ssl_verify,session_string, logger)
 
     def login(self, username: str, password: str) -> Result:
-        result = self._rest_adapter.post('/login',
-                                         data={"username": username, "password": password}, prefix="")
-        return result
+        if not self._rest_adapter.session_string:
+            result = self._rest_adapter.post('/login',
+                                             data={"username": username, "password": password}, prefix="")
+            self._rest_adapter.session_string = result.response.cookies.get("session")
+            return result
+        return XuipyException("Already logged in.")
 
     def get_all_inbounds(self) -> List[Inbound]:
         result = self._rest_adapter.get(endpoint="/")
@@ -32,7 +36,6 @@ class Xuipy:
         result = self._rest_adapter.get(f"/get/{inbound_id}")
         if not result.data:
             raise XuipyException(result.message)
-        print(result.data)
         return utils.handle_raw_inbound(result.data)
 
     def create_backup(self):
@@ -49,7 +52,7 @@ class Xuipy:
     def update_inbound(self, inbound_id: int) -> Inbound:
         pass
 
-    def add_client(self, inbound_id: int, email: str, client_uuid: Optional[Union[UUID,str]] = None, password: Optional[str] = None, enable: bool = True,
+    def add_client(self, inbound_id: int, email: str, client_uuid: Optional[str] = None, password: Optional[str] = None, enable: bool = True,
                    flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
                    expire_time: Optional[int] = None, reset: Optional[int] = 0,  # TODO : support Datetime directly
                    telegram_id: Optional[Union[str, int]] = None, subscription_id: Optional[Union[str, int]] = None
@@ -87,10 +90,10 @@ class Xuipy:
         }
         return self._rest_adapter.post(f"/addClient", data=data)
 
-    def delete_client(self, inbound_id: int, client_uuid: UUID) -> Result:
+    def delete_client(self, inbound_id: int, client_uuid: str) -> Result:
         return self._rest_adapter.post(f"/:{inbound_id}/delClient/{client_uuid}")
 
-    def update_client(self, inbound_id: int, email: str, client_uuid: Optional[Union[UUID,str]] = None, password: Optional[str] = None,
+    def update_client(self, inbound_id: int, email: str, client_uuid: Optional[str] = None, password: Optional[str] = None,
                        enable: bool = True,
                        flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
                        expire_time: Optional[int] = None,  # TODO : support Datetime directly

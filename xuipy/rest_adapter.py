@@ -9,7 +9,8 @@ from xuipy.models import Result
 class RestAdapter:
     def __init__(self, hostname: str,
                  port: int = 443, https: bool = False, path: str = "",
-                 ssl_verify: bool = True, logger: logging.Logger = None):
+                 ssl_verify: bool = True,session_string: str = None,
+                 logger: logging.Logger = None):
         """
         Constructor for RestAdapter
         :param hostname: Normally, api.thecatapi.com
@@ -28,6 +29,10 @@ class RestAdapter:
         self._path = path
         self._ssl_verify = ssl_verify
         self.session = requests.Session()
+        self.session_string = session_string
+        if session_string:
+            cookies = requests.utils.cookiejar_from_dict({'session': self.session_string})
+            self.session.cookies.update(cookies)
         if not ssl_verify:
             # noinspection PyUnresolvedReferences
             requests.packages.urllib3.disable_warnings()
@@ -67,13 +72,13 @@ class RestAdapter:
             log_line = log_line_post.format(is_success, response.status_code, response.reason)
             if is_success and data_out:
                 self._logger.debug(msg=log_line)
-                return Result(status_code=response.status_code, headers=response.headers,
+                return Result(status_code=response.status_code, headers=response.headers,response=response,
                               success=data_out['success'], message=data_out['msg'], data=data_out['obj'])
             if not is_success:
                 self._logger.error(msg=log_line)
                 raise XuipyException(f"{response.status_code}: {response.reason}")
-            return Result(status_code=response.status_code, headers=response.headers,
-                          success=True,message=response.reason, data=None)
+            return Result(status_code=response.status_code, headers=response.headers,response=response,
+                          success=True, message=response.reason, data=None)
         except (ValueError, TypeError, JSONDecodeError) as e:
             self._logger.error(msg=log_line_post.format(False, None, e))
             raise XuipyException("Bad JSON in response") from e
