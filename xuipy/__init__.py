@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 from typing import Iterator, Callable
 
 from xuipy import utils
@@ -31,6 +32,7 @@ class Xuipy:
         result = self._rest_adapter.get(f"/get/{inbound_id}")
         if not result.data:
             raise XuipyException(result.message)
+        print(result.data)
         return utils.handle_raw_inbound(result.data)
 
     def create_backup(self):
@@ -47,28 +49,35 @@ class Xuipy:
     def update_inbound(self, inbound_id: int) -> Inbound:
         pass
 
-    def add_client(self, inbound_id: int, email: str, uuid: Optional[Union[UUID,str]] = None, password: Optional[str] = None, enable: bool = True,
+    def add_client(self, inbound_id: int, email: str, client_uuid: Optional[Union[UUID,str]] = None, password: Optional[str] = None, enable: bool = True,
                    flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
-                   expire_time: Optional[int] = None,  # TODO : support Datetime directly
+                   expire_time: Optional[int] = None, reset: Optional[int] = 0,  # TODO : support Datetime directly
                    telegram_id: Optional[Union[str, int]] = None, subscription_id: Optional[Union[str, int]] = None
                    ) -> Result:
 
         settings = {
             "clients": [
                 {
-                    "id": uuid,
                     "email": email,
                     "enable": enable,
                     "flow": flow,
                     "limitIp": limit_ip,
                     "totalGB": total_traffic,
                     "tgId": telegram_id,
-                    "subId": subscription_id
+                    "subId": subscription_id,
+                    "reset": reset
                 }
             ],
             "decryption": "none",
             "fallbacks": []
         }
+        if isinstance(client_uuid, uuid.UUID):
+            client_uuid = str(client_uuid)
+        if client_uuid and not password:
+            settings["clients"][0]["id"] = client_uuid
+        if not client_uuid and password:
+            settings["clients"][0]["password"] = password
+
         if expire_time:
             settings["clients"][0]["expiryTime"] = expire_time
 
@@ -81,7 +90,7 @@ class Xuipy:
     def delete_client(self, inbound_id: int, client_uuid: UUID) -> Result:
         return self._rest_adapter.post(f"/:{inbound_id}/delClient/{client_uuid}")
 
-    def update_client(self, inbound_id: int, email: str, uuid: Optional[Union[UUID,str]] = None, password: Optional[str] = None,
+    def update_client(self, inbound_id: int, email: str, client_uuid: Optional[Union[UUID,str]] = None, password: Optional[str] = None,
                        enable: bool = True,
                        flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
                        expire_time: Optional[int] = None,  # TODO : support Datetime directly
@@ -90,7 +99,7 @@ class Xuipy:
             settings = {
                 "clients": [
                     {
-                        "id": uuid,
+                        "id": client_uuid,
                         "email": email,
                         "enable": enable,
                         "flow": flow,
@@ -110,7 +119,7 @@ class Xuipy:
                 "id": inbound_id,
                 "settings": json.dumps(settings)
             }
-            return self._rest_adapter.post(f"/updateClient/{uuid}", data=data)
+            return self._rest_adapter.post(f"/updateClient/{client_uuid}", data=data)
 
     def get_client_traffic(self, client_email: Union[int, str]) -> ClientStat:
         result = self._rest_adapter.get(f"/getClientTraffics/{client_email}")
