@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional, Union, Dict, Any
-from uuid import UUID
-
+from requests import Response
 from requests.structures import CaseInsensitiveDict
 from pydantic import BaseModel, ConfigDict
 from pydantic.dataclasses import dataclass
@@ -10,7 +9,8 @@ from pydantic.dataclasses import dataclass
 class Result(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     status_code: int
-    headers: CaseInsensitiveDict
+    headers: Optional[CaseInsensitiveDict]
+    response: Optional[Response]
     success: bool
     message: Optional[str]
     data: Optional[Union[list, dict]]
@@ -20,7 +20,7 @@ class Result(BaseModel):
 class Client:
     email: str
     enable: bool
-    id: Optional[UUID] = None
+    id: Optional[str] = None
     password: Optional[str] = None
     flow: Optional[str] = None
     total_gb: Optional[int] = None
