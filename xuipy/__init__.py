@@ -138,5 +138,5 @@ class Xuipy:
     def delete_depleted_clients(self, inbound_id: int) -> Result:
         return self._rest_adapter.post(f"/delDepletedClients/{inbound_id}")
 
-    def get_get_onlines(self) -> List[str]:
-        return self._rest_adapter.post("/onlines")
+    def get_online_clients(self) -> List[str]:
+        return self._rest_adapter.post("/onlines").data
