@@ -102,7 +102,7 @@ class KcpSettings:
 @dataclass
 class TCPSettings:
     accept_proxy_protocol: Optional[bool] = None
-    header: Optional[str] = None
+    header: Optional[TransmissionTypeHeader] = None
 
 
 @dataclass
