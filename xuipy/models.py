@@ -15,6 +15,7 @@ class Result(BaseModel):
     message: Optional[str]
     data: Optional[Union[list, dict]]
 
+
 @dataclass
 class Client:
     email: str
@@ -47,34 +48,43 @@ class ClientStat:
 class InboundSettings:
     clients: List[Client]
 
+
 @dataclass
 class InboundSniffing:
     enabled: bool
     dest_override: List[str]
+
+
 @dataclass
 class TransmissionTypeHeader:
     type: Optional[str] = None
+
+
 @dataclass
 class WSSettings:
     path: str
     headers: Optional[Dict] = None
     accept_proxy_protocol: Optional[bool] = None
 
+
 @dataclass
 class GrpcSettings:
     service_name: Optional[str] = None
     multi_mode: Optional[bool] = None
+
 
 @dataclass
 class HTTPSettings:
     path: Optional[str] = None
     host: Optional[List[str]] = None
 
+
 @dataclass
 class QuicSettings:
     security: Optional[str] = None
     key: Optional[str] = None
     header: Optional[TransmissionTypeHeader] = None
+
 
 @dataclass
 class KcpSettings:
@@ -88,10 +98,13 @@ class KcpSettings:
     header: Optional[TransmissionTypeHeader] = None
     seed: Optional[str] = None
 
+
 @dataclass
 class TCPSettings:
     accept_proxy_protocol: Optional[bool] = None
     header: Optional[str] = None
+
+
 @dataclass
 class TCPSettingsRequest:
     version: Optional[str] = None
@@ -99,12 +112,15 @@ class TCPSettingsRequest:
     path: Optional[List[str]] = None
     headers: Optional[dict] = None
 
+
 @dataclass
 class TCPSettingsResponse:
     status: Optional[int] = None
     version: Optional[str] = None
     reason: Optional[str] = None
     headers: Optional[dict] = None
+
+
 @dataclass
 class TCPSettingsHeader:
     type: Optional[str] = None
@@ -121,11 +137,13 @@ class TLSSettingsConfig:
     server_name: Optional[str] = None
     spider_x: Optional[str] = None
 
+
 @dataclass
 class TLSCertificate:
     certificate_file: Optional[str] = None
     key_file: Optional[str] = None
     ocsp_stapling: Optional[int] = None
+
 
 @dataclass
 class TLSSettings:
@@ -137,6 +155,7 @@ class TLSSettings:
     certificates: Optional[List[TLSCertificate]] = None
     alpn: Optional[List[str]] = None
     settings: Optional[TLSSettingsConfig] = None
+
 
 @dataclass
 class RealitySettings:
@@ -150,6 +169,7 @@ class RealitySettings:
     max_timediff: Optional[int] = None
     short_ids: Optional[List[str]] = None
     settings: Optional[TLSSettingsConfig] = None
+
 
 @dataclass
 class ExternalProxy:
@@ -166,6 +186,7 @@ class Sockopt:
     mark: Optional[int] = None
     tproxy: Optional[str] = None
 
+
 @dataclass
 class InboundStreamSettings:
     network: str
@@ -178,6 +199,7 @@ class InboundStreamSettings:
     grpc_settings: Optional[GrpcSettings] = None
     http_settings: Optional[HTTPSettings] = None
     sockopt: Optional[Sockopt] = None
+
 
 @dataclass
 class Inbound:
@@ -196,4 +218,3 @@ class Inbound:
     stream_settings: InboundStreamSettings
     tag: str
     sniffing: InboundSniffing
-
