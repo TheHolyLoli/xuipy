@@ -52,24 +52,27 @@ class Xuipy:
     def update_inbound(self, inbound_id: int) -> Inbound:
         pass
 
-    def add_client(self, inbound_id: int, email: str, client_uuid: Optional[str] = None, password: Optional[str] = None, enable: bool = True,
+    def add_client(self, inbound_id: int, email: str, client_uuid: Optional[str] = None,
+                   password: Optional[str] = None, enable: bool = True,
                    flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
                    expire_time: Optional[int] = None, reset: Optional[int] = 0,  # TODO : support Datetime directly
                    telegram_id: Optional[Union[str, int]] = None, subscription_id: Optional[Union[str, int]] = None
                    ) -> Result:
-
-        settings = {
-            "clients": [
-                {
+        data = {
                     "email": email,
                     "enable": enable,
                     "flow": flow,
                     "limitIp": limit_ip,
+                    "expiryTime": expire_time,
                     "totalGB": total_traffic,
                     "tgId": telegram_id,
                     "subId": subscription_id,
                     "reset": reset
                 }
+        filtered_data = {key: value for key, value in data.items() if value not in (None,"",[])}
+        settings = {
+            "clients": [
+                filtered_data
             ],
             "decryption": "none",
             "fallbacks": []
@@ -80,6 +83,8 @@ class Xuipy:
             settings["clients"][0]["id"] = client_uuid
         if not client_uuid and password:
             settings["clients"][0]["password"] = password
+        if client_uuid and password:
+            raise XuipyException("you can not pass both client_uuid and password at the same time.")
 
         if expire_time:
             settings["clients"][0]["expiryTime"] = expire_time
@@ -90,39 +95,50 @@ class Xuipy:
         }
         return self._rest_adapter.post(f"/addClient", data=data)
 
-    def delete_client(self, inbound_id: int, client_uuid: str) -> Result:
-        return self._rest_adapter.post(f"/:{inbound_id}/delClient/{client_uuid}")
+    def delete_client(self, inbound_id: int, client_id: str) -> Result:
+        return self._rest_adapter.post(f"/{inbound_id}/delClient/{client_id}")
 
-    def update_client(self, inbound_id: int, email: str, client_uuid: Optional[str] = None, password: Optional[str] = None,
+    def update_client(self, inbound_id: int, email: str, client_id: Optional[str] = None, password: Optional[str] = None,
                        enable: bool = True,
                        flow: Optional[str] = "", limit_ip: Optional[int] = None, total_traffic: Optional[int] = 0,
-                       expire_time: Optional[int] = None,  # TODO : support Datetime directly
+                       expire_time: Optional[int] = None, reset: Optional[int] = 0, # TODO : support Datetime directly
                        telegram_id: Optional[Union[str, int]] = None, subscription_id: Optional[Union[str, int]] = None
                        ) -> Client:
-            settings = {
-                "clients": [
-                    {
-                        "id": client_uuid,
-                        "email": email,
-                        "enable": enable,
-                        "flow": flow,
-                        "limitIp": limit_ip,
-                        "totalGB": total_traffic,
-                        "tgId": telegram_id,
-                        "subId": subscription_id
-                    }
-                ],
-                "decryption": "none",
-                "fallbacks": []
-            }
-            if expire_time:
-                settings["clients"][0]["expiryTime"] = expire_time
+        data = {
+            "email": email,
+            "enable": enable,
+            "flow": flow,
+            "limitIp": limit_ip,
+            "totalGB": total_traffic,
+            "expiryTime": expire_time,
+            "tgId": telegram_id,
+            "subId": subscription_id,
+            "reset": reset
+        }
+        filtered_data = {key: value for key, value in data.items() if value not in (None, "", [])}
+        settings = {
+            "clients": [
+                filtered_data
+            ],
+            "decryption": "none",
+            "fallbacks": []
+        }
+        if isinstance(client_uuid, uuid.UUID):
+            client_uuid = str(client_uuid)
+        if client_uuid and not password:
+            settings["clients"][0]["id"] = client_uuid
+        if not client_uuid and password:
+            settings["clients"][0]["password"] = password
+        if client_uuid and password:
+            raise XuipyException("you can not pass both client_uuid and password at the same time.")
+        if expire_time:
+            settings["clients"][0]["expiryTime"] = expire_time
 
-            data = {
-                "id": inbound_id,
-                "settings": json.dumps(settings)
-            }
-            return self._rest_adapter.post(f"/updateClient/{client_uuid}", data=data)
+        data = {
+            "id": inbound_id,
+            "settings": json.dumps(settings)
+        }
+        return self._rest_adapter.post(f"/updateClient/{client_id}", data=data)
 
     def get_client_traffic(self, client_email: Union[int, str]) -> ClientStat:
         result = self._rest_adapter.get(f"/getClientTraffics/{client_email}")

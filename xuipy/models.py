@@ -1,9 +1,7 @@
-from dataclasses import dataclass
 from typing import List, Optional, Union, Dict, Any
 from requests import Response
 from requests.structures import CaseInsensitiveDict
 from pydantic import BaseModel, ConfigDict
-from pydantic.dataclasses import dataclass
 
 
 class Result(BaseModel):
@@ -16,8 +14,8 @@ class Result(BaseModel):
     data: Optional[Union[list, dict]]
 
 
-@dataclass
-class Client:
+
+class Client(BaseModel):
     email: str
     enable: bool
     id: Optional[str] = None
@@ -31,8 +29,8 @@ class Client:
     reset: Optional[int] = None
 
 
-@dataclass
-class ClientStat:
+
+class ClientStat(BaseModel):
     id: int
     inbound_id: int
     enable: bool
@@ -44,50 +42,50 @@ class ClientStat:
     expiry_time: Optional[int] = None
 
 
-@dataclass
-class InboundSettings:
+
+class InboundSettings(BaseModel):
     clients: List[Client]
 
 
-@dataclass
-class InboundSniffing:
+
+class InboundSniffing(BaseModel):
     enabled: bool
     dest_override: List[str]
 
 
-@dataclass
-class TransmissionTypeHeader:
+
+class TransmissionTypeHeader(BaseModel):
     type: Optional[str] = None
 
 
-@dataclass
-class WSSettings:
+
+class WSSettings(BaseModel):
     path: str
     headers: Optional[Dict] = None
     accept_proxy_protocol: Optional[bool] = None
 
 
-@dataclass
-class GrpcSettings:
+
+class GrpcSettings(BaseModel):
     service_name: Optional[str] = None
     multi_mode: Optional[bool] = None
 
 
-@dataclass
-class HTTPSettings:
+
+class HTTPSettings(BaseModel):
     path: Optional[str] = None
     host: Optional[List[str]] = None
 
 
-@dataclass
-class QuicSettings:
+
+class QuicSettings(BaseModel):
     security: Optional[str] = None
     key: Optional[str] = None
     header: Optional[TransmissionTypeHeader] = None
 
 
-@dataclass
-class KcpSettings:
+
+class KcpSettings(BaseModel):
     mtu: Optional[int] = None
     tti: Optional[int] = None
     uplink_capacity: Optional[int] = None
@@ -99,37 +97,37 @@ class KcpSettings:
     seed: Optional[str] = None
 
 
-@dataclass
-class TCPSettings:
+
+class TCPSettings(BaseModel):
     accept_proxy_protocol: Optional[bool] = None
     header: Optional[TransmissionTypeHeader] = None
 
 
-@dataclass
-class TCPSettingsRequest:
+
+class TCPSettingsRequest(BaseModel):
     version: Optional[str] = None
     method: Optional[str] = None
     path: Optional[List[str]] = None
     headers: Optional[dict] = None
 
 
-@dataclass
-class TCPSettingsResponse:
+
+class TCPSettingsResponse(BaseModel):
     status: Optional[int] = None
     version: Optional[str] = None
     reason: Optional[str] = None
     headers: Optional[dict] = None
 
 
-@dataclass
-class TCPSettingsHeader:
+
+class TCPSettingsHeader(BaseModel):
     type: Optional[str] = None
     request: Optional[TCPSettingsRequest] = None
     response: Optional[TCPSettingsResponse] = None
 
 
-@dataclass
-class TLSSettingsConfig:
+
+class TLSSettingsConfig(BaseModel):
     allow_insecure: Optional[bool] = None
     fingerprint: Optional[str] = None
     # REALITY ONLY:
@@ -138,15 +136,15 @@ class TLSSettingsConfig:
     spider_x: Optional[str] = None
 
 
-@dataclass
-class TLSCertificate:
+
+class TLSCertificate(BaseModel):
     certificate_file: Optional[str] = None
     key_file: Optional[str] = None
     ocsp_stapling: Optional[int] = None
 
 
-@dataclass
-class TLSSettings:
+
+class TLSSettings(BaseModel):
     server_name: Optional[str] = None
     min_version: Optional[str] = None
     max_version: Optional[str] = None
@@ -157,8 +155,8 @@ class TLSSettings:
     settings: Optional[TLSSettingsConfig] = None
 
 
-@dataclass
-class RealitySettings:
+
+class RealitySettings(BaseModel):
     show: Optional[bool] = None
     xver: Optional[int] = None
     dest: Optional[str] = None
@@ -171,24 +169,24 @@ class RealitySettings:
     settings: Optional[TLSSettingsConfig] = None
 
 
-@dataclass
-class ExternalProxy:
+
+class ExternalProxy(BaseModel):
     force_tls: Optional[str] = None
     dest: Optional[str] = None
     port: Optional[int] = None
     remark: Optional[str] = None
 
 
-@dataclass
-class Sockopt:
+
+class Sockopt(BaseModel):
     accept_proxy_protocol: Optional[bool] = None
     tcp_fast_open: Optional[bool] = None
     mark: Optional[int] = None
     tproxy: Optional[str] = None
 
 
-@dataclass
-class InboundStreamSettings:
+
+class InboundStreamSettings(BaseModel):
     network: str
     security: str
     external_proxy: Optional[List[ExternalProxy]] = None
@@ -201,8 +199,8 @@ class InboundStreamSettings:
     sockopt: Optional[Sockopt] = None
 
 
-@dataclass
-class Inbound:
+
+class Inbound(BaseModel):
     id: int
     up: int
     down: int
